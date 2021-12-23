@@ -1,0 +1,95 @@
+#include <LiquidCrystal_I2C.h>
+#include <dht.h>
+LiquidCrystal_I2C dis(0x27, 16, 2);
+
+dht DHT;
+#define DHT_PIN 7
+#define rainPin 8
+#define pirPin 10
+
+int t;
+int h;
+
+
+void setup() {
+  Serial.begin(9600);
+  dis.begin();
+  dis.backlight();
+  dis.clear();
+  pinMode(2, OUTPUT);
+  digitalWrite(2, HIGH);
+  dis.setCursor(0, 0);
+  dis.print("IRRIGATION");
+  dis.setCursor(0, 1);
+  dis.print("SYSTEM IS ON ");
+  dis.print(".");
+  delay(1500);
+  dis.clear();
+}
+ 
+void loop() {
+  int value = analogRead(A0);
+  Serial.println(value);
+  if (value > 800) {
+    digitalWrite(2, LOW);
+    dis.setCursor(0, 0);
+    dis.print("MOTOR IS ON ");
+  } else {
+    digitalWrite(2, HIGH);
+    dis.setCursor(0, 0);
+    dis.print("MOTOR IS OFF");
+  }
+ 
+  if (value < 300) {
+    dis.setCursor(0, 1);
+    dis.print("MOISTURE : HIGH");
+  } else if (value > 300 && value < 800) {
+    dis.setCursor(0, 1);
+    dis.print("MOISTURE : MID ");
+  } else if (value > 800) {
+    dis.setCursor(0, 1);
+    dis.print("MOISTURE : LOW ");
+  }
+  DHT.read11(DHT_PIN);
+
+
+  h = DHT.humidity;
+  t = DHT.temperature;
+
+
+  delay(1000);
+
+  Serial.print("temperature: ");
+  Serial.println(t );
+  dis.setCursor(0,0);
+  dis.print("T:");
+  dis.print(t);
+  dis.print("C");
+  dis.print(" H:");
+  dis.print(h);
+  dis.print("% ");
+
+  delay(2000);
+
+
+  Serial.print("humidity: ");
+  Serial.println(h );
+
+
+  delay(1000);
+
+  int rain = digitalRead(rainPin);
+  
+  Serial.println("rain");
+  Serial.print(rain);
+  if (rain == 0){
+    Serial.println("It's Raining");
+    dis.setCursor(0,1);
+    dis.print("It's raining.  ");
+    delay(2000);
+  }
+  else{
+    Serial.print("No rains");
+  }
+  
+}
